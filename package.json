@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
-    "install:all": "npm --prefix client install && npm --prefix server install",
+    "install:all": "npm --prefix client ci && npm --prefix server ci",
     "db:setup": "npm --prefix server run db:setup",
+    "predev": "npm run db:setup",
     "dev": "concurrently --kill-others-on-fail \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "test": "npm --prefix server test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
