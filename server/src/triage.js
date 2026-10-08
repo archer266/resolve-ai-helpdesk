@@ -57,7 +57,7 @@ export async function triageTicket({ title, description }) {
   if (!isOpenAIEnabled()) return localTriage(title, description);
 
   try {
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 10000, maxRetries: 0 });
     const response = await client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       instructions: [
@@ -79,6 +79,12 @@ export async function triageTicket({ title, description }) {
     });
 
     const result = JSON.parse(response.output_text);
+    if (!categories.includes(result.category) || !priorities.includes(result.priority)
+      || typeof result.confidence !== "number" || result.confidence < 0 || result.confidence > 1
+      || typeof result.summary !== "string" || !result.summary.trim()
+      || typeof result.suggestedAction !== "string" || !result.suggestedAction.trim()) {
+      throw new Error("The AI response was incomplete.");
+    }
     return { ...result, source: "openai" };
   } catch (error) {
     console.error("OpenAI triage failed; using local fallback:", error.message);
